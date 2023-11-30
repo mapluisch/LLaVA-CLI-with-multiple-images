@@ -1,7 +1,7 @@
 # LLaVA-CLI-with-multiple-images
 LLaVA inference combining multiple images into one for streamlined processing and analysis.
 
-The images are not truncated or re-scaled, but just concatenated vertically with 20px spacing between them.
+The images are not truncated or re-scaled, but just concatenated vertically with 20px spacing between them. You can adapt the `concatenate_images` func so images are resized, scaled, etc.; this repo should serve as a very basic example.  
 
 You can specify as many images as you want.
 
