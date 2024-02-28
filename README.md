@@ -51,7 +51,7 @@ python3 llava-multi-images.py --load-4bit --save-image --images test-images/img3
 ```
 
 LLaVA receives this image
-<p align="center">!
+<p align="center">
   <img src="https://github.com/mapluisch/LLaVA-CLI-with-multiple-images/assets/31780571/01873626-9b5a-40b0-90b8-2eb96160f5d6" width="500">
 </p>
 
@@ -81,7 +81,7 @@ python3 llava-multi-images.py --load-4bit --save-image --images test-images/img5
 
 LLaVA receives this concatenated image
 
-<p align="center">!
+<p align="center">
   <img src="https://github.com/mapluisch/LLaVA-CLI-with-multiple-images/assets/31780571/69ee07eb-722a-46d1-a598-10a7fabe9cfb" width="500">
 </p>
 
