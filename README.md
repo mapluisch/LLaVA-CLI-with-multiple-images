@@ -8,8 +8,8 @@ LLaVA inference combining multiple images into one for streamlined processing an
 For these two input images 
 
 <p align="center">
-  <img src="https://github.com/mapluisch/LLaVA-CLI-with-multiple-images/assets/31780571/51719905-0265-4333-8e5a-798598f7f79b" height="250" style="margin-right: 10px;">
-  <img src="https://github.com/mapluisch/LLaVA-CLI-with-multiple-images/assets/31780571/66bda775-156b-404b-9171-41fa21e3c0c6" height="250">
+  <img src="https://github.com/mapluisch/LLaVA-CLI-with-multiple-images/assets/31780571/66bda775-156b-404b-9171-41fa21e3c0c6" height="250" style="margin-right: 10px;">
+  <img src="https://github.com/mapluisch/LLaVA-CLI-with-multiple-images/assets/31780571/51719905-0265-4333-8e5a-798598f7f79b" height="250">   
 </p>
 
 calling my script with these arguments
