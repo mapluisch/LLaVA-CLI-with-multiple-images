@@ -23,21 +23,58 @@ def load_image(image_file):
         image = Image.open(image_file).convert('RGB')
     return image
 
-def concatenate_images(images):
+def concatenate_images_vertical(images, dist_images):
     width = max(img.width for img in images)
-    total_height = sum(img.height for img in images) + 20 * (len(images) - 1)
+    total_height = sum(img.height for img in images) + dist_images * (len(images) - 1)
 
     new_img = Image.new('RGB', (width, total_height), (0, 0, 0))
 
     current_height = 0
     for img in images:
         new_img.paste(img, (0, current_height))
-        current_height += img.height + 20  # adding a 20px black bar
+        current_height += img.height + dist_images
 
     return new_img
 
+def concatenate_images_horizontal(images, dist_images):
+    total_width = sum(img.width for img in images) + dist_images * (len(images) - 1)
+    height = max(img.height for img in images)
+
+    new_img = Image.new('RGB', (total_width, height), (0, 0, 0))
+
+    current_width = 0
+    for img in images:
+        new_img.paste(img, (current_width, 0))
+        current_width += img.width + dist_images
+
+    return new_img
+
+def concatenate_images_grid(images, output_size=(2560, 1440)):
+    new_img = Image.new('RGB', output_size, (0, 0, 0))
+    if len(images) == 1:
+        img = images[0].resize((output_size[0]//2, output_size[1]//2), Image.ANTIALIAS)
+        new_img.paste(img, (output_size[0]//4, output_size[1]//4))
+    else:
+        for index, img in enumerate(images):
+            quadrant_size = (output_size[0] // 2, output_size[1] // 2)
+            resized_img = img.resize(quadrant_size, Image.ANTIALIAS)
+            x_offset = (index % 2) * quadrant_size[0]
+            y_offset = (index // 2) * quadrant_size[1]
+            new_img.paste(resized_img, (x_offset, y_offset))
+
+    return new_img
+
+def concatenate_images(images, strategy, dist_images):
+    if strategy == 'vertical':
+        return concatenate_images_vertical(images, dist_images)
+    elif strategy == 'horizontal':
+        return concatenate_images_horizontal(images, dist_images)
+    elif strategy == 'grid':
+        return concatenate_images_grid(images)
+    else:
+        raise ValueError("Invalid concatenation strategy specified")
+
 def main(args):
-    # Model
     disable_torch_init()
 
     model_name = get_model_name_from_path(args.model_path)
@@ -64,13 +101,11 @@ def main(args):
         roles = conv.roles
 
     images = [load_image(img_file) for img_file in args.images]
-    image = concatenate_images(images) if len(images) > 1 else images[0]
+    image = concatenate_images(images, args.concat_strategy) if len(images) > 1 else images[0]
 
     if args.save_image:
         image.save("concat-image.jpg")
 
-
-    # Similar operation in model_worker.py
     image_tensor = process_images([image], image_processor, model.config)
     if type(image_tensor) is list:
         image_tensor = [image.to(model.device, dtype=torch.float16) for image in image_tensor]
@@ -128,7 +163,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model-path", type=str, default="liuhaotian/llava-v1.5-13b")
+    parser.add_argument("--model-path", type=str, default="liuhaotian/llava-v1.6-vicuna-13b")
     parser.add_argument("--model-base", type=str, default=None)
     parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--conv-mode", type=str, default=None)
@@ -140,6 +175,8 @@ if __name__ == "__main__":
 
     parser.add_argument("--images", type=str, nargs='+', required=True)
     parser.add_argument("--save-image", action="store_true")
+    parser.add_argument("--concat-strategy", type=str, default="vertical", choices=["vertical", "horizontal", "grid"])
+    parser.add_argument("--dist-images", type=int, default=20)
 
     args = parser.parse_args()
     main(args)
