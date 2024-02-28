@@ -5,15 +5,12 @@ from llava.constants import IMAGE_TOKEN_INDEX, DEFAULT_IMAGE_TOKEN, DEFAULT_IM_S
 from llava.conversation import conv_templates, SeparatorStyle
 from llava.model.builder import load_pretrained_model
 from llava.utils import disable_torch_init
-from llava.mm_utils import process_images, tokenizer_image_token, get_model_name_from_path, KeywordsStoppingCriteria
-
-from PIL import Image
+from llava.mm_utils import process_images, tokenizer_image_token, get_model_name_from_path
 
 import requests
 from PIL import Image
 from io import BytesIO
 from transformers import TextStreamer
-
 
 def load_image(image_file):
     if image_file.startswith('http://') or image_file.startswith('https://'):
@@ -49,20 +46,30 @@ def concatenate_images_horizontal(images, dist_images):
 
     return new_img
 
-def concatenate_images_grid(images, output_size=(2560, 1440)):
+def concatenate_images_grid(images, dist_images, output_size=(2560, 1440)):
     new_img = Image.new('RGB', output_size, (0, 0, 0))
-    if len(images) == 1:
-        img = images[0].resize((output_size[0]//2, output_size[1]//2), Image.ANTIALIAS)
-        new_img.paste(img, (output_size[0]//4, output_size[1]//4))
-    else:
-        for index, img in enumerate(images):
-            quadrant_size = (output_size[0] // 2, output_size[1] // 2)
-            resized_img = img.resize(quadrant_size, Image.ANTIALIAS)
-            x_offset = (index % 2) * quadrant_size[0]
-            y_offset = (index // 2) * quadrant_size[1]
-            new_img.paste(resized_img, (x_offset, y_offset))
+    quadrant_size = ((output_size[0] - 3 * dist_images) // 2, (output_size[1] - 3 * dist_images) // 2)
+
+    for index, img in enumerate(images):
+        img_ratio = img.width / img.height
+        target_ratio = quadrant_size[0] / quadrant_size[1]
+
+        if img_ratio > target_ratio:
+            new_width = quadrant_size[0]
+            new_height = int(quadrant_size[0] / img_ratio)
+        else:
+            new_width = int(quadrant_size[1] * img_ratio)
+            new_height = quadrant_size[1]
+
+        resized_img = img.resize((new_width, new_height), Image.LANCZOS)
+        x_offset = (index % 2) * (quadrant_size[0] + dist_images) + (quadrant_size[0] - new_width) // 2 + dist_images
+        y_offset = (index // 2) * (quadrant_size[1] + dist_images) + (quadrant_size[1] - new_height) // 2 + dist_images
+
+        new_img.paste(resized_img, (x_offset, y_offset))
 
     return new_img
+
+
 
 def concatenate_images(images, strategy, dist_images):
     if strategy == 'vertical':
@@ -70,7 +77,7 @@ def concatenate_images(images, strategy, dist_images):
     elif strategy == 'horizontal':
         return concatenate_images_horizontal(images, dist_images)
     elif strategy == 'grid':
-        return concatenate_images_grid(images)
+        return concatenate_images_grid(images, dist_images)
     else:
         raise ValueError("Invalid concatenation strategy specified")
 
@@ -80,8 +87,12 @@ def main(args):
     model_name = get_model_name_from_path(args.model_path)
     tokenizer, model, image_processor, context_len = load_pretrained_model(args.model_path, args.model_base, model_name, args.load_8bit, args.load_4bit, device=args.device)
 
-    if 'llama-2' in model_name.lower():
+    if "llama-2" in model_name.lower():
         conv_mode = "llava_llama_2"
+    elif "mistral" in model_name.lower():
+        conv_mode = "mistral_instruct"
+    elif "v1.6-34b" in model_name.lower():
+        conv_mode = "chatml_direct"
     elif "v1" in model_name.lower():
         conv_mode = "llava_v1"
     elif "mpt" in model_name.lower():
@@ -101,7 +112,8 @@ def main(args):
         roles = conv.roles
 
     images = [load_image(img_file) for img_file in args.images]
-    image = concatenate_images(images, args.concat_strategy) if len(images) > 1 else images[0]
+    image = concatenate_images(images, args.concat_strategy, args.dist_images) if len(images) > 1 else images[0]
+    image_size = image.size
 
     if args.save_image:
         image.save("concat-image.jpg")
@@ -140,21 +152,20 @@ def main(args):
         input_ids = tokenizer_image_token(prompt, tokenizer, IMAGE_TOKEN_INDEX, return_tensors='pt').unsqueeze(0).to(model.device)
         stop_str = conv.sep if conv.sep_style != SeparatorStyle.TWO else conv.sep2
         keywords = [stop_str]
-        stopping_criteria = KeywordsStoppingCriteria(keywords, tokenizer, input_ids)
         streamer = TextStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
 
         with torch.inference_mode():
             output_ids = model.generate(
                 input_ids,
                 images=image_tensor,
+                image_sizes=[image_size],
                 do_sample=True if args.temperature > 0 else False,
                 temperature=args.temperature,
                 max_new_tokens=args.max_new_tokens,
                 streamer=streamer,
-                use_cache=True,
-                stopping_criteria=[stopping_criteria])
+                use_cache=True)
 
-        outputs = tokenizer.decode(output_ids[0, input_ids.shape[1]:]).strip()
+        outputs = tokenizer.decode(output_ids[0]).strip()
         conv.messages[-1][-1] = outputs
 
         if args.debug:
