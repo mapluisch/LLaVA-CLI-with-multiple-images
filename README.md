@@ -1,9 +1,8 @@
 <h1 align="center">LLaVA CLI with multiple images</h1>
 <div align="center">
-  <img src="https://github.com/mapluisch/LLaVA-CLI-with-multiple-images/assets/31780571/11158dd4-057f-40d5-b1dc-1d2f8518d47a" alt="banner" style="width:50%">
+  <img src="https://github.com/mapluisch/LLaVA-CLI-with-multiple-images/assets/31780571/37055c23-417d-4338-88d8-de572e0923db" alt="banner" style="width:50%">
   <p>LLaVA inference combining multiple images into one for streamlined processing and cross-image analysis.</p>
 </div>
-
 
 ## Setup
 0. You should follow the LLaVA tutorial, so that you have the pretrained model / checkpoint shards ready.
@@ -179,4 +178,4 @@ Again, you can now pose questions to LLaVA, e.g., whether it can tell us a short
 > In this collage, cars are the stars of the scene.
 
 ## Disclaimer
-This project is a prototype and serves as a basic example of using LLaVA CLI inference with multiple images at once. I have not tested this extensively - I've tried both LLaVA v1.5 and v1.6 13b with 4-bit quantization. Feel free to create a PR.
+This project is a prototype and serves as a basic example of using LLaVA CLI inference with multiple images at once. <b>I have not tested this extensively</b> - I've tried both LLaVA v1.5 and v1.6 13b with 4-bit quantization. Results may and probably will vary depending on the model and quantization you choose. Feel free to create a PR.
