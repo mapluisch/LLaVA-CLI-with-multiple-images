@@ -1,4 +1,4 @@
-<h1 align="center">LLaVA-CLI-with-multiple-images</h1>
+<h1 align="center">LLaVA CLI with multiple images</h1>
 <div align="center">
   <img src="https://github.com/mapluisch/LLaVA-CLI-with-multiple-images/assets/31780571/11158dd4-057f-40d5-b1dc-1d2f8518d47a" alt="banner" style="width:50%">
   <p>LLaVA inference combining multiple images into one for streamlined processing and cross-image analysis.</p>
@@ -65,7 +65,7 @@ Using `--grid-resolution`, you can specify the output image's resolution when us
 ### Vertical Placement
 
 #### Input
-For these two input images, `img1.jpg` & `img2.jpg`
+For these two input images, `img1.jpg` & `img2.jpg`:
 
 <p align="center">
   <img src="https://github.com/mapluisch/LLaVA-CLI-with-multiple-images/assets/31780571/66bda775-156b-404b-9171-41fa21e3c0c6" height="250" style="margin-right: 10px;">
@@ -73,19 +73,17 @@ For these two input images, `img1.jpg` & `img2.jpg`
 </p>
 
 #### Image Concatenation
-calling my script with these arguments
 ```
 python3 llava-multi-images.py --load-4bit --save-image --images test-images/img1.jpg test-images/img2.jpg --dist-images 250 --concat-strategy vertical
 ```
 
-LLaVA receives this concatenated image
+results in this concatenated image being used for LLaVA's CLI conversation (empty space in the lower right due to resolution mismatch):
 <p align="center">
   <img src="https://github.com/mapluisch/LLaVA-CLI-with-multiple-images/assets/31780571/cdd3573f-b3e1-4e87-af8c-4266583691a4" width="250">
 </p>
 
 #### LLaVA Response
-and can answer questions about it, understanding that they are separate images:
-
+LLaVA can now answer questions about the merged image, understanding that it consists of separate images:
 
 > USER: Analyze and explain which image is the most visually intriguing.
 
@@ -101,7 +99,7 @@ and can answer questions about it, understanding that they are separate images:
 ### Horizontal Placement
 
 #### Input
-Given these two input images, `img3.jpg` & `img4.jpg`
+Given these two input images, `img3.jpg` & `img4.jpg`:
 
 <p align="center">
   <img src="https://github.com/mapluisch/LLaVA-CLI-with-multiple-images/assets/31780571/04b32564-78f1-4cbe-85cd-9eb113968e72" height="250" style="margin-right: 10px;">
@@ -110,18 +108,17 @@ Given these two input images, `img3.jpg` & `img4.jpg`
 
 
 #### Image Concatenation
-and these arguments
 ```
 python3 llava-multi-images.py --load-4bit --save-image --images test-images/img3.jpg test-images/img4.jpg --dist-images 250 --concat-strategy horizontal
 ```
 
-LLaVA receives this image
+LLaVA receives this image (again, empty space in the lower right due to resolution mismatch):
 <p align="center">
   <img src="https://github.com/mapluisch/LLaVA-CLI-with-multiple-images/assets/31780571/01873626-9b5a-40b0-90b8-2eb96160f5d6" width="500">
 </p>
 
 #### LLaVA Response
-and can once again answer promptly:
+...and can once again answer promptly:
 
 > USER: Describe the main parts of each image.
 
@@ -132,7 +129,7 @@ and can once again answer promptly:
 
 ### Grid Placement
 #### Input
-Finally, given e.g. nine input images, in this case `img{5-13}.jpg`
+Finally, given e.g. nine input images, in this case `img{5-13}.jpg`:
 
 <p align="center" style="display: flex; flex-wrap: nowrap; justify-content: center; align-items: center;">
   <img src="https://github.com/mapluisch/LLaVA-CLI-with-multiple-images/assets/31780571/e0bb537d-fb00-4a78-b60d-08ad9dbb412f" height="100" style="margin-right: 10px;">
@@ -147,18 +144,17 @@ Finally, given e.g. nine input images, in this case `img{5-13}.jpg`
 </p>
 
 #### Image Concatenation
-and these arguments
 ```
 python3 llava-multi-images.py --load-4bit --save-image --images test-images/img{5-13}.jpg --dist-images 150 --concat-strategy grid --temperature 0.7
 ```
 
-LLaVA receives this concatenated image
+LLaVA receives this new image with a size of `--grid-resolution`, which defaults to 2560x1440, consisting of a grid of images:
 <p align="center">
   <img src="https://github.com/mapluisch/LLaVA-CLI-with-multiple-images/assets/31780571/53a0de86-f777-431b-ae9d-f8b0830daf7d" width="500">
 </p>
 
 #### LLaVA Response
-and can tell us a short rhyme about the different cars:
+Again, you can now pose questions to LLaVA, e.g., whether it can tell us a short rhyme about the different cars:
 
 > USER: Write a rhyme about how many different cars you can see.
 
