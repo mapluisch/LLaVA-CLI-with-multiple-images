@@ -1,5 +1,9 @@
-# LLaVA-CLI-with-multiple-images
-LLaVA inference combining multiple images into one for streamlined processing and cross-image analysis.
+<h1 align="center">LLaVA-CLI-with-multiple-images</h1>
+<div align="center">
+  <img src="https://github.com/mapluisch/LLaVA-CLI-with-multiple-images/assets/31780571/11158dd4-057f-40d5-b1dc-1d2f8518d47a" alt="banner" style="width:50%">
+  <p>LLaVA inference combining multiple images into one for streamlined processing and cross-image analysis.</p>
+</div>
+
 
 ## Setup
 0. You should follow the LLaVA tutorial, so that you have the pretrained model / checkpoint shards ready.
