@@ -21,39 +21,56 @@ def load_image(image_file):
     return image
 
 def concatenate_images_vertical(images, dist_images):
+    # calc max width from imgs
     width = max(img.width for img in images)
+    # calc total height of imgs + dist between them
     total_height = sum(img.height for img in images) + dist_images * (len(images) - 1)
 
+    # create new img with calculated dimensions, black bg
     new_img = Image.new('RGB', (width, total_height), (0, 0, 0))
 
+    # init var to track current height pos
     current_height = 0
     for img in images:
+        # paste img in new_img at current height
         new_img.paste(img, (0, current_height))
+        # update current height for next img
         current_height += img.height + dist_images
 
     return new_img
 
 def concatenate_images_horizontal(images, dist_images):
+    # calc total width of imgs + dist between them
     total_width = sum(img.width for img in images) + dist_images * (len(images) - 1)
+    # calc max height from imgs
     height = max(img.height for img in images)
 
+    # create new img with calculated dimensions, black bg
     new_img = Image.new('RGB', (total_width, height), (0, 0, 0))
 
+    # init var to track current width pos
     current_width = 0
     for img in images:
+        # paste img in new_img at current width
         new_img.paste(img, (current_width, 0))
+        # update current width for next img
         current_width += img.width + dist_images
 
     return new_img
 
 def concatenate_images_grid(images, dist_images, output_size=(2560, 1440)):
+    # create new img with output_size, black bg
     new_img = Image.new('RGB', output_size, (0, 0, 0))
+    # calc quadrant size for imgs, accounting for specified dist
     quadrant_size = ((output_size[0] - 3 * dist_images) // 2, (output_size[1] - 3 * dist_images) // 2)
 
     for index, img in enumerate(images):
+        # calc img aspect ratio
         img_ratio = img.width / img.height
+        # calc target quadrant aspect ratio
         target_ratio = quadrant_size[0] / quadrant_size[1]
 
+        # resize img to fit in quadrant
         if img_ratio > target_ratio:
             new_width = quadrant_size[0]
             new_height = int(quadrant_size[0] / img_ratio)
@@ -61,10 +78,13 @@ def concatenate_images_grid(images, dist_images, output_size=(2560, 1440)):
             new_width = int(quadrant_size[1] * img_ratio)
             new_height = quadrant_size[1]
 
+        # resize img using lanczos filter
         resized_img = img.resize((new_width, new_height), Image.LANCZOS)
+        # calc x, y offsets for img positioning
         x_offset = (index % 2) * (quadrant_size[0] + dist_images) + (quadrant_size[0] - new_width) // 2 + dist_images
         y_offset = (index // 2) * (quadrant_size[1] + dist_images) + (quadrant_size[1] - new_height) // 2 + dist_images
 
+        # paste resized img in calc pos
         new_img.paste(resized_img, (x_offset, y_offset))
 
     return new_img
@@ -184,10 +204,17 @@ if __name__ == "__main__":
     parser.add_argument("--load-4bit", action="store_true")
     parser.add_argument("--debug", action="store_true")
 
-    parser.add_argument("--images", type=str, nargs='+', required=True)
-    parser.add_argument("--save-image", action="store_true")
-    parser.add_argument("--concat-strategy", type=str, default="vertical", choices=["vertical", "horizontal", "grid"])
-    parser.add_argument("--dist-images", type=int, default=20)
+    parser.add_argument("--images", type=str, nargs='+', required=True,
+                    help="Specify the paths for images to be concatenated. Accepts multiple paths.")
+
+    parser.add_argument("--save-image", action="store_true",
+                    help="If used, stores the resulting concatenated image in the LLaVA directory as 'concat-image.jpg'.")
+
+    parser.add_argument("--concat-strategy", type=str, default="vertical", choices=["vertical", "horizontal", "grid"],
+                    help="Determines the arrangement strategy for image concatenation. Options: 'vertical', 'horizontal', 'grid'.")
+    
+    parser.add_argument("--dist-images", type=int, default=20,
+                    help="Sets the spacing (in pixels) between concatenated images.")
 
     args = parser.parse_args()
     main(args)

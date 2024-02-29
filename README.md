@@ -28,7 +28,7 @@ Additionally added args:
 ```
 --images
 --save-image, action="store_true"
---concate-strategy, default="vertical", choices=["vertical", "horizontal", "grid"]
+--concat-strategy, default="vertical", choices=["vertical", "horizontal", "grid"]
 --dist-images, default=20
 ```
 
@@ -36,7 +36,7 @@ Using `--images /some/img1.jpg /some/img2.jpg /some/img_n.jpg`, you can specify 
 
 Using `--save-image`, the resulting concatenated image gets stored in the LLaVA directory as `concat-image.jpg`.
 
-Using `--concat-strategy`, you can specify the arrangement of the concatenated images (see [Examples](##Examples))
+Using `--concat-strategy`, you can specify the arrangement of the concatenated images (see [Examples](##Examples)).
 
 Using `--dist-images`, you can specify the spacing between images.
 
